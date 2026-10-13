@@ -1,0 +1,7 @@
+__pycache__/
+.venv/
+# vecchia versione, sostituita da scout.py
+statistiche_beach.py
+report.html
+# i tuoi dati veri restano sul tuo PC
+storico_scout.csv
