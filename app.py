@@ -26,6 +26,17 @@ def aggiungi(riga):
     d.loc[len(d)] = riga
 
 
+def togli(riga):
+    """Toglie 1 alla stessa voce (stessa data, coppia e giocatore); se arriva a 0 la riga sparisce."""
+    d = st.session_state.df
+    uguali = d[(d.data == riga[0]) & (d.coppia == riga[1]) & (d.giocatore == riga[2]) & (d.voce == riga[3])]
+    if not uguali.empty:
+        i = uguali.index[-1]
+        d.loc[i, "n"] -= 1
+        if d.loc[i, "n"] <= 0:
+            st.session_state.df = d.drop(i).reset_index(drop=True)
+
+
 def annulla():
     st.session_state.df = st.session_state.df.iloc[:-1]
 
@@ -75,8 +86,12 @@ with tab_scout:
     for titolo, gruppo in FOCUS[blocco]:
         st.markdown(f"**{titolo}**")
         for col, voce in zip(st.columns(len(gruppo)), gruppo):
-            col.button(f"{voce.replace('_', ' ')} · {gia.get(voce, 0)}", key=voce, use_container_width=True,
-                       on_click=aggiungi, args=([str(giorno), coppia, giocatore, voce, 1],), disabled=not coppia)
+            riga = [str(giorno), coppia, giocatore, voce, 1]
+            piu, meno = col.columns([3, 1])
+            piu.button(f"＋ {voce.replace('_', ' ')} · {gia.get(voce, 0)}", key=voce, use_container_width=True,
+                       on_click=aggiungi, args=(riga,), disabled=not coppia)
+            meno.button("−", key=f"meno_{voce}", use_container_width=True, help="Toglie 1",
+                        on_click=togli, args=(riga,), disabled=not coppia or not gia.get(voce, 0))
     st.button("↩️ Annulla l'ultima", on_click=annulla, disabled=df.empty)
 
     with st.expander("Hai già i totali (es. contati su carta)? Inseriscili qui"):
