@@ -48,7 +48,8 @@ with st.sidebar:
                "**scarica il file a fine allenamento** e ricaricalo la volta dopo.")
 
 df = st.session_state.df
-tab_scout, tab_confronto, tab_andamento = st.tabs(["📝 Scout", "📊 Confronto", "📈 Andamento"])
+tab_scout, tab_confronto, tab_andamento, tab_storico = st.tabs(
+    ["📝 Scout", "📊 Confronto", "📈 Andamento", "📥 Storico"])
 
 # --- Scout: scegli cosa scoutizzi e per chi, poi clicca ogni azione appena la vedi
 with tab_scout:
@@ -141,3 +142,34 @@ with tab_andamento:
             (st.bar_chart if len(val) == 1 else st.line_chart)(val)
             st.caption("Totale di tutti gli allenamenti")
             st.dataframe(tot, use_container_width=True)
+
+# --- Storico: inserisci in blocco gli allenamenti passati (anche incollando da Excel)
+with tab_storico:
+    st.write("Aggiungi allenamenti già fatti: **una riga per coppia** (o per giocatore, scrivendo il nome nella colonna "
+             "*giocatore*) con i totali di quella data. Puoi anche incollare le righe copiate da Excel.")
+    blocco_s = st.radio("Quali statistiche inserisci?", list(FOCUS), horizontal=True, key="blocco_s")
+    voci_s = [v for _, gruppo in FOCUS[blocco_s] for v in gruppo]
+    vuota = pd.DataFrame({"data": pd.Series(dtype=str), "coppia": pd.Series(dtype=str),
+                          "giocatore": pd.Series(dtype=str), **{v: pd.Series(dtype=float) for v in voci_s}})
+    st.session_state.setdefault("n_storico", 0)  # cambia dopo ogni inserimento, così la tabella si svuota
+    tabella = st.data_editor(
+        vuota, num_rows="dynamic", hide_index=True, use_container_width=True,
+        key=f"storico_{blocco_s}_{st.session_state.n_storico}",
+        column_config={"data": st.column_config.TextColumn("data", help="es. 2026-10-13 oppure 13/10/2026"),
+                       "giocatore": st.column_config.TextColumn("giocatore", help="vuoto = dati della coppia"),
+                       **{v: st.column_config.NumberColumn(v.replace("_", " "), min_value=0, step=1) for v in voci_s}})
+    if st.button("Aggiungi allo storico", type="primary"):
+        iso = pd.to_datetime(tabella.data, format="%Y-%m-%d", errors="coerce")  # 2026-10-06 = 6 ottobre
+        altro = pd.to_datetime(tabella.data, dayfirst=True, format="mixed", errors="coerce")  # 06/10/2026
+        tabella = tabella.assign(data=iso.fillna(altro))
+        valide = tabella.dropna(subset=["data", "coppia"]).copy()
+        valide["data"] = valide.data.dt.strftime("%Y-%m-%d")
+        valide["coppia"] = valide.coppia.str.strip().str.title()
+        valide["giocatore"] = valide.giocatore.fillna("").str.strip().str.title()
+        lungo = valide.melt(["data", "coppia", "giocatore"], var_name="voce", value_name="n").fillna({"n": 0})
+        lungo = lungo[lungo.n > 0][COLONNE].astype({"n": int})
+        if len(valide) < len(tabella):
+            st.warning(f"{len(tabella) - len(valide)} righe saltate: servono almeno data e coppia.")
+        st.session_state.df = pd.concat([st.session_state.df, lungo], ignore_index=True)
+        st.session_state.n_storico += 1
+        st.success(f"Aggiunte {len(lungo)} voci. Le trovi in Confronto e Andamento; ricordati di scaricare lo storico.")

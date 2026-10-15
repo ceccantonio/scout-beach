@@ -16,6 +16,8 @@ Non serve saper programmare: si usa dal browser.
 4. A fine allenamento clicca **Scarica lo storico aggiornato** e conserva il file: la volta dopo lo ricarichi.
 5. Nella scheda **Confronto** metti a confronto le coppie (o i giocatori) che vuoi, su un allenamento o su tutti.
    Nella scheda **Andamento** vedi come cambia una coppia (o un giocatore) allenamento dopo allenamento.
+6. Per inserire allenamenti **già fatti** usa la scheda **Storico**: una tabella con una riga per coppia (o per
+   giocatore) e i totali di quella data. Puoi anche incollare le righe copiate da Excel. Poi scarica lo storico aggiornato.
 
 > ⚠️ L'app non salva nulla sui server: i dati sono solo nel tuo file. Se chiudi la pagina senza scaricare, li perdi.
 
