@@ -36,6 +36,8 @@ P_GLOBALE_SIDEOUT = [1.5, 3.5]  # peso di valutazione ricezione, valutazione sid
 def carica(src):
     """Legge il file (percorso o file-like) in un DataFrame con le colonne COLONNE."""
     righe = np.loadtxt(src, dtype=str, delimiter=";", comments="#", ndmin=2, encoding="utf-8-sig")
+    if righe.shape[1] == 4:  # vecchio formato data;atleta;voce;n -> aggiunge la colonna giocatore (vuota)
+        righe = np.insert(righe, 2, "", axis=1)
     df = pd.DataFrame(righe, columns=COLONNE).apply(lambda c: c.str.strip())
     df["voce"] = df.voce.str.lower()
     df[["coppia", "giocatore"]] = df[["coppia", "giocatore"]].apply(lambda c: c.str.title())
