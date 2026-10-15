@@ -1,10 +1,11 @@
 """Statistiche Break (battuta) e Side Out (ricezione) di beach volley: le stesse del file Excel.
 
-Ogni riga del file è un conteggio:   data;atleta;voce;n
-    2026-06-08;Mario;ace;2        (2 ace in quella data)
-Le righe che iniziano con # (o non valide, come un'intestazione) vengono ignorate.
+Ogni riga del file è un conteggio:   data;coppia;giocatore;voce;n
+    2026-06-08;Anna - Bruno;;ace;2          (la coppia ha fatto 2 ace)
+    2026-06-08;Anna - Bruno;Anna;ace;1      (Anna, singolarmente, ha fatto 1 ace)
+Il campo giocatore è vuoto per i dati della coppia. Le righe che iniziano con # (o non valide) sono ignorate.
 
-Uso da terminale:   python scout.py storico.txt [Atleta]
+Uso da terminale:   python scout.py storico.txt [Coppia]
 """
 import sys
 import warnings
@@ -14,7 +15,7 @@ import pandas as pd
 
 warnings.filterwarnings("ignore", message="Input line")  # avviso innocuo di loadtxt sulla riga d'intestazione
 
-COLONNE = ["data", "atleta", "voce", "n"]
+COLONNE = ["data", "coppia", "giocatore", "voce", "n"]
 
 # Le voci che si contano (come le colonne "Assoluto" dell'Excel)
 BATTUTA = ["ace", "efficace", "non_efficace", "errore"]  # tipo di battuta: si escludono a vicenda
@@ -36,7 +37,8 @@ def carica(src):
     """Legge il file (percorso o file-like) in un DataFrame con le colonne COLONNE."""
     righe = np.loadtxt(src, dtype=str, delimiter=";", comments="#", ndmin=2, encoding="utf-8-sig")
     df = pd.DataFrame(righe, columns=COLONNE).apply(lambda c: c.str.strip())
-    df["voce"], df["atleta"] = df.voce.str.lower(), df.atleta.str.title()
+    df["voce"] = df.voce.str.lower()
+    df[["coppia", "giocatore"]] = df[["coppia", "giocatore"]].apply(lambda c: c.str.title())
     df = df[df.voce.isin(VOCI)]  # scarta intestazioni e righe sbagliate
     return df.astype({"n": int})
 
@@ -46,9 +48,9 @@ def salva(df):
     return "#" + ";".join(COLONNE) + "\n" + df.to_csv(sep=";", header=False, index=False, lineterminator="\n")
 
 
-def statistiche(df, per=("atleta",)):
+def statistiche(df, per=("coppia",)):
     """Ritorna (tabella break, tabella side out), una riga per ogni gruppo di `per`
-    (es. per=("data", "atleta") per vedere l'andamento nel tempo). Percentuali e valutazioni da 0 a 100."""
+    (es. per=("data", "coppia") per vedere l'andamento nel tempo). Percentuali e valutazioni da 0 a 100."""
     c = df.astype({"n": int}).pivot_table(index=list(per), columns="voce", values="n", aggfunc="sum", fill_value=0)
     c = c.reindex(columns=VOCI, fill_value=0)
 
@@ -87,6 +89,6 @@ def statistiche(df, per=("atleta",)):
 if __name__ == "__main__":
     df = carica(sys.argv[1])
     if len(sys.argv) > 2:
-        df = df[df.atleta == sys.argv[2].title()]
+        df = df[df.coppia == sys.argv[2].title()]
     for tabella in statistiche(df):
         print(tabella.to_string(), "\n")

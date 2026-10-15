@@ -7,10 +7,15 @@ Non serve saper programmare: si usa dal browser.
 ## Come si usa (web app)
 
 1. Apri l'app e, se hai già fatto altri allenamenti, carica il tuo file `storico_scout.txt` nella barra a sinistra.
-2. Nella scheda **Scout** scegli data e atleta/coppia, poi clicca i bottoni a ogni azione che vedi.
-   Se hai già i totali contati su carta, inseriscili nel riquadro "Hai già i totali".
-3. A fine allenamento clicca **Scarica lo storico aggiornato** e conserva il file: la volta dopo lo ricarichi.
-4. Nella scheda **Andamento** vedi le valutazioni allenamento dopo allenamento.
+2. Nella scheda **Scout** scegli la data e **cosa scoutizzi oggi**: *servizio e break* oppure *ricezione e side out*
+   (compaiono solo i bottoni che servono).
+3. Scegli la coppia (o creane una nuova scrivendo i due nomi) e se registri i dati **della coppia** o di **un singolo
+   giocatore** della coppia. Poi clicca i bottoni a ogni azione che vedi: su ogni bottone c'è il conteggio di oggi,
+   e sotto compare subito l'istogramma con tutte le coppie a confronto. Se hai già i totali contati su carta,
+   inseriscili nel riquadro apposito.
+4. A fine allenamento clicca **Scarica lo storico aggiornato** e conserva il file: la volta dopo lo ricarichi.
+5. Nella scheda **Confronto** metti a confronto le coppie (o i giocatori) che vuoi, su un allenamento o su tutti.
+   Nella scheda **Andamento** vedi come cambia una coppia (o un giocatore) allenamento dopo allenamento.
 
 > ⚠️ L'app non salva nulla sui server: i dati sono solo nel tuo file. Se chiudi la pagina senza scaricare, li perdi.
 
@@ -48,15 +53,18 @@ otterrai un link da mandare ai giocatori.
 Testo semplice, un conteggio per riga:
 
 ```
-#data;atleta;voce;n
-2026-06-08;Mario;ace;2
-2026-06-08;Mario;ricezione_pos;7
+#data;coppia;giocatore;voce;n
+2026-06-08;Anna - Bruno;;ace;2
+2026-06-08;Anna - Bruno;Anna;ricezione_pos;7
 ```
+
+Il campo `giocatore` è vuoto quando il dato è della coppia. I dati dei singoli sono tenuti separati da quelli
+della coppia: le statistiche dei giocatori sommano le righe di quel giocatore in tutte le sue coppie.
 
 Voci ammesse: `ace efficace non_efficace errore utile trasformato errore_su_utile`
 `ace_subito ricezione_pos ricezione_neg so_diretto so_indiretto so_perso`.
 
 ## Il codice
 
-- [`scout.py`](scout.py): lettura con `loadtxt` e calcolo delle statistiche (3 funzioni). Da terminale: `python scout.py storico.txt Mario`.
+- [`scout.py`](scout.py): lettura con `loadtxt` e calcolo delle statistiche (3 funzioni). Da terminale: `python scout.py storico.txt "Anna - Bruno"`.
 - [`app.py`](app.py): interfaccia web.

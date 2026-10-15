@@ -7,3 +7,5 @@ report.html
 storico_scout.txt
 # l'Excel originale contiene i nomi degli atleti: non va online
 *.xlsx
+storico_scout*.txt
+*.mltbx
